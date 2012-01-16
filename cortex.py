@@ -50,9 +50,25 @@ def cost_function(Theta1, Theta2, input_layer_size, hidden_layer_size, num_label
 
     # calculate Regularization Function
     regFunc = (nn_lambda/(2*m)) * (np.sum(np.sum(np.power(Theta1[:, 1:], 2))) + np.sum(np.sum(np.power(Theta2[:, 1:], 2))) )
+
+    pow_t1 = np.power(Theta1[:, 1:], 2)
+    pow_t2 = np.power(Theta2[:, 1:], 2)
+
+    sum_across_t1 = pow_t1.sum(axis=0)
+    sum_down_t1 = sum_across_t1.sum()
+
+    sum_across_t2 = pow_t2.sum(axis=0)
+    sum_down_t2 = sum_across_t2.sum()
+
+    lambda_term = (nn_lambda / (2.00 * m))
+
+    regFunc = lambda_term * (sum_down_t1 + sum_down_t2)
+
+
+
+
     
     # calculate cost fuction
-
     out_layer = np.log(sigmoid_output_layer)
     print 'out_layer.shape : ', out_layer.shape
     print 'out_layer : ', out_layer[0,:]
@@ -80,7 +96,7 @@ def cost_function(Theta1, Theta2, input_layer_size, hidden_layer_size, num_label
     cost = divisor * sum_down
     print 'cost  : ', cost
 
-    J = divisor * sum_down
+    J = divisor * sum_down + regFunc
 
     return J
 
@@ -175,7 +191,7 @@ def main():
     input_layer_size  = 400
     hidden_layer_size = 25
     num_labels = 10  
-    nn_lambda = 0
+    nn_lambda = 1
     #predict(Theta1, Theta2, X, y, m, areLabelsZeroIndexed=False)
 
     J = cost_function(Theta1, Theta2, input_layer_size, hidden_layer_size, num_labels, X, y, nn_lambda, areLabelsZeroIndexed=False)

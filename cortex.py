@@ -2,11 +2,18 @@ from scipy.io import loadmat
 import numpy as np
 
 
+def sigmoidGradient(z):
+    g = np.zeros( z.shape )
+    
+    g = sigmoid(z) * (1 - sigmoid(z))
+
+    return g
+
 def cost_function(Theta1, Theta2, input_layer_size, hidden_layer_size, num_labels, X, y, nn_lambda, areLabelsZeroIndexed):
     m = len(X)
     J = 0
-    Theta1_grad = np.zeros( (len(Theta1), 0) )
-    Theta2_grad = np.zeros( (len(Theta2), 0) )
+    Theta1_grad = np.zeros( Theta1.shape )
+    Theta2_grad = np.zeros( Theta2.shape )
     
     bias_column = np.ones( (len(X), 1) )
     print '[+] created bias column : ', bias_column.shape
@@ -64,9 +71,6 @@ def cost_function(Theta1, Theta2, input_layer_size, hidden_layer_size, num_label
 
     regFunc = lambda_term * (sum_down_t1 + sum_down_t2)
 
-
-
-
     
     # calculate cost fuction
     out_layer = np.log(sigmoid_output_layer)
@@ -98,12 +102,66 @@ def cost_function(Theta1, Theta2, input_layer_size, hidden_layer_size, num_label
 
     J = divisor * sum_down + regFunc
 
+    for t in range(2):
+        # FORWARD PROPAGATION
+        
+        a_1 = np.transpose( X[t,:] )
+        print 'a_1 shape : ', a_1.shape
+
+        z_2 = np.dot(Theta1, a_1)
+        print 'z_2 shape : ', z_2.shape
+
+        a_2 = sigmoid(z_2)
+        print 'a_2 shape :', a_2.shape
+        
+       
+        a_2 = np.concatenate(([1], a_2))
+        print 'a_2 ', a_2.shape
+    
+        z_3 = np.dot(Theta2, a_2)
+
+        a_3 = sigmoid(z_3)
+        a_3 = a_3.reshape(10,1) # this should be parameterized
+
+        print 'a_3.shape : ', a_3.shape
+
+        y_k = yy[t].reshape(10,1) # this should be parameterized
+        #print 'y_k : ', y_k
+
+        ## BACK PROP ##
+
+        delta_3 = a_3 - y_k
+        print 'delta_3.shape : ', delta_3.shape
+
+        biased_z2 = np.concatenate(([1], z_2))
+        
+        biased_z2 = biased_z2.reshape(26,1) # this should be parameterized
+        print 'biased_z2.shape : ', biased_z2.shape
+
+        delta_2 = np.dot(np.transpose(Theta2), delta_3) * sigmoidGradient(biased_z2)
+        print 'delta_2 shape ', delta_2.shape
+
+        delta2_slice = delta_2[1:].copy()
+        print 'silce : ', delta2_slice.shape
+        
+        a_2 = a_2.reshape(1,26) # this should be parameterized
+        print 'a_2.shape ', a_2.shape
+
+        print 'delta_3.shape : ', delta_3.shape
+        
+        print 'delta_2 ', delta2_slice.shape
+
+        a_1 = a_1.reshape(1, 401) # this should be parameterized
+        print 'a_1 ', a_1.shape
+
+
+        Theta2_grad = Theta2_grad + (np.dot(delta_3, a_2))
+        Theta1_grad = Theta1_grad + (np.dot(delta2_slice, a_1))
     return J
 
 
 
 def sigmoid(matrix):
-    print '[+] calculating sigmoid for matrix...'
     return 1.0 / ( 1.0 + np.exp(-matrix) ) 
 
 def predict_labels(Theta1, Theta2, X, areLabelsZeroIndexed):

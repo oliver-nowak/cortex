@@ -157,6 +157,26 @@ def cost_function(Theta1, Theta2, input_layer_size, hidden_layer_size, num_label
 
         Theta2_grad = Theta2_grad + (np.dot(delta_3, a_2))
         Theta1_grad = Theta1_grad + (np.dot(delta2_slice, a_1))
+    
+    
+    func2 = Theta2
+    
+    func2[:,0] = 0
+    
+    func2[:, 1:] = (nn_lambda/m) * Theta2[:, 1:]
+    
+
+    func1 = Theta1
+
+    func1[:, 0] = 0
+
+    func1[:, 1:] = (nn_lambda/m) * Theta1[:, 1:]
+
+    Theta2_grad = ((1/m) * Theta2_grad) + func2
+    Theta1_grad = ((1/m) * Theta1_grad) + func1
+
+    grad = (Theta1_grad[:].flatten(1), Theta2_grad[:].flatten(1))
+
     return J
 
 
